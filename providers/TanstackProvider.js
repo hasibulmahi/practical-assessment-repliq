@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import HttpKit from "@/common/helpers/HttpKit"; // Adjust this path as necessary
 import { toast } from 'react-toastify'; // Import toast notification
 
-// Create TanstackContext
 const TanstackContext = createContext();
 
 // Define TanstackProvider component
