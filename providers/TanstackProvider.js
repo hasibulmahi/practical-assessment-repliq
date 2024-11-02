@@ -1,66 +1,95 @@
 "use client";
-import React, { useState, createContext, useContext, useEffect } from "react";
+import React, { useState, useEffect, createContext, useContext } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import HttpKit from "@/common/helpers/HttpKit"; // Adjust this path as necessary
-import { toast } from 'react-toastify'; // Import toast notification
 
+// Create TanstackContext
 const TanstackContext = createContext();
 
-// Define TanstackProvider component
 const TanstackProvider = ({ children }) => {
-    const [queryClient] = useState(() => new QueryClient());
-    const [user, setUser] = useState(null);
+  const [queryClient] = useState(() => new QueryClient());
+  const [user, setUser] = useState(null);
+  const [cart, setCart] = useState([]); // Start with an empty array
 
-    // Optional: Use localStorage to persist user session
-    useEffect(() => {
-        const storedUser = JSON.parse(localStorage.getItem("user"));
-        if (storedUser) {
-            setUser(storedUser);
-        }
-    }, []);
+  // Load cart from local storage only after client-side rendering
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedCart = localStorage.getItem("cart");
+      if (savedCart) {
+        setCart(JSON.parse(savedCart));
+      }
+    }
+  }, []);
 
-    const register = async (name, email, phone, password) => {
-        try {
-            const response = await HttpKit.registerUser({ name, email, phone, password });
-            setUser(response.data);
-            localStorage.setItem("user", JSON.stringify(response.data)); // Persist user data
-            toast.success("Registration successful!"); // Show success toast
-        } catch (error) {
-            console.error("Registration failed", error);
-            toast.error("Registration failed. Please try again."); // Show error toast
-        }
-    };
+  const register = async (name, email, phone, password) => {
+    try {
+      const response = await HttpKit.registerUser({
+        name,
+        email,
+        phone,
+        password,
+      });
+      setUser(response.data); // Set user after registration
+    } catch (error) {
+      console.error("Registration failed", error);
+    }
+  };
 
-    const login = async (email, password) => {
-        try {
-            const response = await HttpKit.loginUser({ email, password });
-            setUser(response.data);
-            localStorage.setItem("user", JSON.stringify(response.data)); // Persist user data
-            toast.success("Login successful!"); // Show success toast
-        } catch (error) {
-            console.error("Login failed", error);
-            toast.error("Login failed. Please check your credentials."); // Show error toast
-        }
-    };
+  const login = async (email, password) => {
+    try {
+      const response = await HttpKit.loginUser({ email, password });
+      setUser(response.data); // Set user after login
+    } catch (error) {
+      console.error("Login failed", error);
+    }
+  };
 
-    const logout = () => {
-        setUser(null);
-        localStorage.removeItem("user"); // Remove user data from localStorage
-        toast.info("You have logged out."); // Show logout toast
-    };
+  const logout = () => {
+    setUser(null);
+  };
 
-    return (
-        <TanstackContext.Provider value={{ user, register, login, logout }}>
-            <QueryClientProvider client={queryClient}>
-                {children}
-            </QueryClientProvider>
-        </TanstackContext.Provider>
-    );
+  const addToCart = (item) => {
+    setCart((prevCart) => {
+      const updatedCart = [...prevCart, item];
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      return updatedCart;
+    });
+  };
+
+  const removeFromCart = (itemId) => {
+    setCart((prevCart) => {
+      const updatedCart = prevCart.filter((item) => item.id !== itemId);
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      return updatedCart;
+    });
+  };
+
+  const clearCart = () => {
+    setCart([]);
+    localStorage.removeItem("cart");
+  };
+
+  return (
+    <TanstackContext.Provider
+      value={{
+        user,
+        register,
+        login,
+        logout,
+        cart,
+        addToCart,
+        removeFromCart,
+        clearCart,
+      }}
+    >
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </TanstackContext.Provider>
+  );
 };
 
 // Custom hook to use TanstackContext
 export const useTanstack = () => {
-    return useContext(TanstackContext);
+  return useContext(TanstackContext);
 };
 
 export default TanstackProvider;
