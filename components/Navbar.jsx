@@ -46,7 +46,7 @@ const Navbar = () => {
               </button>
             ) : (
               <>
-                <Link href="/login" className="text-yellow-900 hover:text-yellow-600 transition font-bold">
+                <Link href="/login" className="text-yellow-900 hover:text-yellow-600 transition ">
                   Login
                 </Link>
                 <Link href="/signup" className="bg-yellow-400 text-black font-bold py-2 px-4 rounded hover:bg-yellow-500">
