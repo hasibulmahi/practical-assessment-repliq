@@ -1,22 +1,26 @@
 "use client";
 import { useTanstack } from "@/providers/TanstackProvider";
 import { useState } from "react";
-import { toast } from "react-toastify"; // Import toast
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation"; // Import useRouter
 
 const LoginPage = () => {
   const { login } = useTanstack();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter(); // Initialize router
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login(email, password); // Assuming login returns a promise
-      toast.success("Login successful!"); // Show success toast
+      await login(email, password);
+      toast.success("Login successful!");
+      router.push("/"); // Redirect to home page
     } catch (error) {
-      toast.error("Login failed. Please check your credentials."); // Show error toast
+      toast.error("Login failed. Please check your credentials.");
     }
   };
+
 
   return (
     <div className="h-screen flex items-center justify-center bg-gray-50">
